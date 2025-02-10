@@ -15,17 +15,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'TU Electricity',
       initialRoute: '/',
-      // routes: {
-      //   '/': (context) => const LoginPage(),
-      //   '/home': (context) => Homepage(), // Define HomePage route
-      // },
+      routes: {
+        '/': (context) => const LoginPage(),
+        '/home': (context) => Homepage(), // Define HomePage route
+      },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: LoginPage(
+      // home: LoginPage(
 
-      ),
+      // ),
     );
   }
 }

@@ -48,7 +48,7 @@ class LoginPage extends StatelessWidget {
 
   Future<bool> checkUserAccess(String gmail) async {
     // TODO: Replace this with Google Sheets API call
-    List<String> allowedUsers = ["allowed1@gmail.com", "allowed2@gmail.com"]; // Example
+    List<String> allowedUsers = ["yagarwal_be23@thapar.edu", "sbhagat2@thapar.edu"]; // Example
     return allowedUsers.contains(gmail);
   }
 }
