@@ -15,7 +15,7 @@ class LoginPage extends StatelessWidget {
               String? gmail = await AuthFunctions().getGoogleId();
               
               if (gmail != null) {
-                bool isAllowed = await checkUserAccess(gmail); // Check access
+                bool isAllowed = await checkUserAccess(gmail); 
                 if (isAllowed) {
                   Navigator.pushReplacementNamed(context, '/home');
                 } else {
@@ -47,8 +47,7 @@ class LoginPage extends StatelessWidget {
   }
 
   Future<bool> checkUserAccess(String gmail) async {
-    // TODO: Replace this with Google Sheets API call
-    List<String> allowedUsers = ["yagarwal_be23@thapar.edu", "sbhagat2@thapar.edu"]; // Example
+    List<String> allowedUsers = ["yagarwal_be23@thapar.edu", "sbhagat2@thapar.edu"]; 
     return allowedUsers.contains(gmail);
   }
 }
