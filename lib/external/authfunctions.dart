@@ -15,9 +15,9 @@ class GoogleAuthService {
       final GoogleSignInAuthentication authData = await account.authentication;
       final auth.AccessCredentials credentials = auth.AccessCredentials(
         auth.AccessToken(
-          'Bearer', 
-          authData.accessToken!, 
-          DateTime.now().toUtc().add(Duration(seconds: 3600)), 
+          'Bearer',
+          authData.accessToken!,
+          DateTime.now().toUtc().add(Duration(seconds: 3600)),
         ),
         authData.idToken,
         ['https://www.googleapis.com/auth/spreadsheets'],

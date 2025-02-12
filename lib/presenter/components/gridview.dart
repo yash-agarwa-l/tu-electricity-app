@@ -5,7 +5,7 @@ class SheetsGridView extends StatelessWidget {
   final List<String> sheets;
   final SheetsService? sheetsService;
 
-  SheetsGridView({required this.sheets, required this.sheetsService});
+  const SheetsGridView({super.key, required this.sheets, required this.sheetsService});
 
   @override
   Widget build(BuildContext context) {
