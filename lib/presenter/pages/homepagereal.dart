@@ -5,7 +5,7 @@ class SheetsGridView extends StatelessWidget {
   final List<String> sheets;
   final SheetsService? sheetsService;
 
-  SheetsGridView({required this.sheets, required this.sheetsService});
+  const SheetsGridView({super.key, required this.sheets, required this.sheetsService});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class SheetsGridView extends StatelessWidget {
 class HomePageMain extends StatefulWidget {
   final SheetsService? sheetsService;
 
-  HomePageMain({super.key, required this.sheetsService});
+  const HomePageMain({super.key, required this.sheetsService});
 
   @override
   State<HomePageMain> createState() => _HomePageMainState();
@@ -87,7 +87,7 @@ class NextPage extends StatelessWidget {
   final String sheetName;
   final SheetsService? sheetsService;
 
-  NextPage({required this.sheetName, required this.sheetsService});
+  const NextPage({super.key, required this.sheetName, required this.sheetsService});
 
   @override
   Widget build(BuildContext context) {
