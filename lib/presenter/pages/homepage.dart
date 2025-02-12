@@ -9,13 +9,40 @@ class Homepage extends StatefulWidget {
 
   const Homepage({super.key, required this.sheetsService});
 
+
   @override
   State<Homepage> createState() => _HomepageState();
 }
 
 class _HomepageState extends State<Homepage> {
-  String? selectedHostel;
-  final List<String> hostels = ['A', 'B', 'C', 'D'];
+
+  
+    String? selectedHostel;
+  List<String> hostels = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchHostels(); 
+  }
+
+  Future<void> fetchHostels() async {
+    if (widget.sheetsService == null) {
+      debugPrint("SheetsService is not initialized!");
+      return;
+    }
+
+    try {
+      final List<dynamic>? firstRow = await widget.sheetsService!.fetchFirstRow();
+      if (firstRow != null && firstRow.isNotEmpty) {
+        setState(() {
+          hostels = firstRow.map((e) => e.toString()).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching hostels: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

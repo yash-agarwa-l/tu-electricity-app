@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:googleapis/sheets/v4.dart';
 import 'package:googleapis_auth/googleapis_auth.dart';
 
@@ -42,6 +43,20 @@ class SheetsService {
     }
     return null;
   }
+
+  Future<List<dynamic>?> fetchFirstRow() async {
+  try {
+    final response = await sheetsApi!.spreadsheets.values.get(
+      spreadsheetId,
+      'Sheet1!E1:1',
+    );
+
+    return response.values?.first;
+  } catch (e) {
+    debugPrint("Error fetching first row: $e");
+    return null;
+  }
+}
 
   /// Get multiple values from a range
   Future<List<List<dynamic>>> getRangeValues(String range) async {
