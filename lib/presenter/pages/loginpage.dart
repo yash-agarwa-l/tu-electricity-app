@@ -1,10 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:googleapis/sheets/v4.dart';
+import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:tu_electricity_app/domain/store.dart';
 import 'package:tu_electricity_app/external/authfunctions.dart';
 import 'package:tu_electricity_app/external/sheet_services.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  final GoogleAuthService authService;
+  final SheetsService sheetsService;
+
+  const LoginPage({
+    super.key,
+    required this.authService,
+    required this.sheetsService,
+  });
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  Future<void> _handleLogin(BuildContext context) async {
+    try {
+      final authClient = await widget.authService.getAuthenticatedClient();
+      if (authClient == null) {
+        _showMessage(context, "Google Sign-In Failed");
+        return;
+      }
+
+      final email = widget.authService.getSignedInUserEmail();
+      if (email == null || email.isEmpty) {
+        _showMessage(context, "Failed to retrieve email");
+        return;
+      }
+
+      final sheetsService = SheetsService(SheetsApi(authClient));
+
+      final isAuthorized = await sheetsService.isAuthorizedUser(email);
+      if (isAuthorized) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        _showMessage(context, "Unauthorized User");
+      }
+    } catch (e) {
+      _showMessage(context, "Login Error: $e");
+    }
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,20 +60,7 @@ class LoginPage extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () async {
-            AuthService authService = AuthService();
-            String? accessToken = await authService.signInWithGoogle();
-            if (accessToken != null) {
-              await TokenFunctions.storeToken(accessToken);
-              String? email = await authService.getUserEmail();
-              if (await SheetsService().isAuthorizedUser(accessToken, email!)) {
-                Navigator.pushReplacementNamed(context, '/home');
-              } else {
-                print("Unauthorized User");
-              }
-              // Navigator.pushReplacementNamed(context, '/home');
-            } else {
-              print("Google Sign-In Failed");
-            }
+            await _handleLogin(context);
           },
           child: const Text('Login'),
         ),
