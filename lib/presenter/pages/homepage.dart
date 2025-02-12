@@ -47,6 +47,7 @@ class _HomepageState extends State<Homepage> {
                 ElevatedButton(
                   onPressed: () async{
                     final accessToken = await TokenFunctions.getToken();
+                    Navigator.pushReplacementNamed(context, '/');
                     SheetsService().updateSheet(accessToken, "Sheet1!A1", [
                 ["Name", "Value"],
                 ["Yash", "100"]

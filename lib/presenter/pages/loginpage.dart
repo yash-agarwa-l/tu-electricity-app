@@ -23,6 +23,7 @@ class LoginPage extends StatelessWidget {
               } else {
                 print("Unauthorized User");
               }
+              // Navigator.pushReplacementNamed(context, '/home');
             } else {
               print("Google Sign-In Failed");
             }
