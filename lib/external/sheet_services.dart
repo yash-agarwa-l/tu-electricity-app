@@ -78,6 +78,15 @@ class SheetsService {
     print("Cell updated successfully!");
   }
 
+  Future<List<String>> getAllSheets() async {
+    final response = await sheetsApi!.spreadsheets.get(spreadsheetId);
+    
+    if (response.sheets != null && response.sheets!.isNotEmpty) {
+      return response.sheets!.map((sheet) => sheet.properties!.title!).toList();
+    }
+    return [];
+  }
+
 //   Future<void> addOrUpdateEntry(
 //      String fieldName, dynamic dataValue) async {
 //   try {
