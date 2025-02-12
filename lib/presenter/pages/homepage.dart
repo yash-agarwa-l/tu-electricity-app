@@ -64,7 +64,7 @@ class _HomepageState extends State<Homepage> {
               DecimalInputField(
                 labelText: 'Enter electricity consumption (in kW)',
                 onChanged: (text) {
-                  print('Text changed: $text');
+                  // print('Text changed: $text');
                 },
               ),
               const SizedBox(height: 20),

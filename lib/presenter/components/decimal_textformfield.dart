@@ -4,7 +4,7 @@ class DecimalInputField extends StatelessWidget {
   final String labelText;
   final ValueChanged<String> onChanged;
 
-  DecimalInputField({
+  const DecimalInputField({super.key, 
     required this.labelText,
     required this.onChanged,
   });

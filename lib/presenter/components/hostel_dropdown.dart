@@ -5,7 +5,7 @@ class HostelDropdown extends StatelessWidget {
   final String? selectedHostel;
   final ValueChanged<String?> onChanged;
 
-  HostelDropdown({
+  const HostelDropdown({super.key, 
     required this.hostels,
     required this.selectedHostel,
     required this.onChanged,
