@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tu_electricity_app/domain/store.dart';
+import 'package:tu_electricity_app/external/sheet_services.dart';
 import 'package:tu_electricity_app/presenter/components/decimal_textformfield.dart';
 import 'package:tu_electricity_app/presenter/components/hostel_dropdown.dart';
 
@@ -43,7 +45,12 @@ class _HomepageState extends State<Homepage> {
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
+                    final accessToken = await TokenFunctions.getToken();
+                    SheetsService().updateSheet(accessToken, "Sheet1!A1", [
+                ["Name", "Value"],
+                ["Yash", "100"]
+              ]);
                     //TODO
                   },
                   child: Text('Submit'),

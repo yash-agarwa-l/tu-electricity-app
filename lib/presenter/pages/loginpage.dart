@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tu_electricity_app/domain/store.dart';
 import 'package:tu_electricity_app/external/authfunctions.dart';
 import 'package:tu_electricity_app/external/sheet_services.dart';
 
@@ -14,12 +15,8 @@ class LoginPage extends StatelessWidget {
           onPressed: () async {
             AuthService authService = AuthService();
             String? accessToken = await authService.signInWithGoogle();
-
             if (accessToken != null) {
-              SheetsService().updateSheet(accessToken, "Sheet1!A1", [
-                ["Name", "Value"],
-                ["Yash", "100"]
-              ]);
+              await TokenFunctions.storeToken(accessToken);
               String? email = await authService.getUserEmail();
               if (await SheetsService().isAuthorizedUser(accessToken, email!)) {
                 Navigator.pushReplacementNamed(context, '/home');
