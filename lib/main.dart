@@ -3,7 +3,6 @@ import 'package:tu_electricity_app/presenter/pages/homepage.dart';
 import 'package:tu_electricity_app/presenter/pages/loginpage.dart';
 
 void main() {
-  print("App is starting...");
   runApp(const MyApp());
 }
 

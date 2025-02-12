@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tu_electricity_app/external/authfunctions.dart';
+import 'package:tu_electricity_app/external/sheet_services.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -11,43 +12,27 @@ class LoginPage extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () async {
-            try {
-              String? gmail = await AuthFunctions().getGoogleId();
-              
-              if (gmail != null) {
-                bool isAllowed = await checkUserAccess(gmail); 
-                if (isAllowed) {
-                  Navigator.pushReplacementNamed(context, '/home');
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text("Access Denied"),
-                      content: const Text("You are not authorized to access this app."),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("OK"),
-                        ),
-                      ],
-                    ),
-                  );
-                }
+            AuthService authService = AuthService();
+            String? accessToken = await authService.signInWithGoogle();
+
+            if (accessToken != null) {
+              SheetsService().updateSheet(accessToken, "Sheet1!A1", [
+                ["Name", "Value"],
+                ["Yash", "100"]
+              ]);
+              String? email = await authService.getUserEmail();
+              if (await SheetsService().isAuthorizedUser(accessToken, email!)) {
+                Navigator.pushReplacementNamed(context, '/home');
               } else {
-                print('No Gmail account found');
+                print("Unauthorized User");
               }
-            } catch (e) {
-              print("Error during login: $e");
+            } else {
+              print("Google Sign-In Failed");
             }
           },
           child: const Text('Login'),
         ),
       ),
     );
-  }
-
-  Future<bool> checkUserAccess(String gmail) async {
-    List<String> allowedUsers = ["yagarwal_be23@thapar.edu", "sbhagat2@thapar.edu"]; 
-    return allowedUsers.contains(gmail);
   }
 }
