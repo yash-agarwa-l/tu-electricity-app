@@ -6,13 +6,13 @@ import 'package:tu_electricity_app/external/authfunctions.dart';
 import 'package:tu_electricity_app/external/sheet_services.dart';
 
 class LoginPage extends StatefulWidget {
-  final GoogleAuthService authService;
-  final SheetsService sheetsService;
+  // final GoogleAuthService authService;
+  // final SheetsService sheetsService;
 
   const LoginPage({
     super.key,
-    required this.authService,
-    required this.sheetsService,
+    // required this.authService,
+    // required this.sheetsService,
   });
 
   @override
@@ -22,13 +22,15 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   Future<void> _handleLogin(BuildContext context) async {
     try {
-      final authClient = await widget.authService.getAuthenticatedClient();
+      final authService = GoogleAuthService();
+      final authClient = await authService.getAuthenticatedClient();
+      // final sheetsService = authClient != null ? SheetsService(SheetsApi(authClient)) : null;
       if (authClient == null) {
         _showMessage(context, "Google Sign-In Failed");
         return;
       }
 
-      final email = widget.authService.getSignedInUserEmail();
+      final email = authService.getSignedInUserEmail();
       if (email == null || email.isEmpty) {
         _showMessage(context, "Failed to retrieve email");
         return;
@@ -38,7 +40,11 @@ class _LoginPageState extends State<LoginPage> {
 
       final isAuthorized = await sheetsService.isAuthorizedUser(email);
       if (isAuthorized) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(
+          context,
+          '/home',
+          arguments: sheetsService,
+        );
       } else {
         _showMessage(context, "Unauthorized User");
       }
