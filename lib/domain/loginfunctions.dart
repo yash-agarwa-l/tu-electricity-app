@@ -3,7 +3,7 @@ import 'package:googleapis/sheets/v4.dart';
 import 'package:tu_electricity_app/external/authfunctions.dart';
 import 'package:tu_electricity_app/external/sheet_services.dart';
 
-Future<void> handleLogin(BuildContext context) async {
+Future<void> loginFunction(BuildContext context) async {
   try {
     final authService = GoogleAuthService();
     final authClient = await authService.getAuthenticatedClient();

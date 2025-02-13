@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tu_electricity_app/domain/store.dart';
 import 'package:tu_electricity_app/external/sheet_services.dart';
 import 'package:tu_electricity_app/presenter/components/decimal_textformfield.dart';
 import 'package:tu_electricity_app/presenter/components/hostel_dropdown.dart';
@@ -95,9 +94,6 @@ class _HomepageState extends State<Homepage> {
                         print("SheetsService is not initialized!");
                         return;
                       }
-
-                      final accessToken = await TokenFunctions.getToken();
-
                       try {
                         await widget.sheetsService!.addOrUpdateEntry(
                           selectedHostel!,
