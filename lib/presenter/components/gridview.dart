@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:tu_electricity_app/external/sheet_services.dart';
+import 'package:tu_electricity_app/presenter/pages/homepagereal.dart';
+import 'package:tu_electricity_app/presenter/utils/colors.dart';
 
 class SheetsGridView extends StatelessWidget {
   final List<String> sheets;
   final SheetsService? sheetsService;
+  final List<Color> colors=[AppColors.color1,AppColors.color2,AppColors.color3,AppColors.color4,AppColors.color5];
 
   SheetsGridView({required this.sheets, required this.sheetsService});
 
@@ -12,24 +15,24 @@ class SheetsGridView extends StatelessWidget {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 8.0,
-        mainAxisSpacing: 8.0,
+        crossAxisSpacing:25.0,
+        mainAxisSpacing: 25.0,
       ),
       itemCount: sheets.length,
       itemBuilder: (context, index) {
         return GestureDetector(
           onTap: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => HomePage(sheetName: sheets[index], sheetsService: sheetsService),
-            //   ),
-            // );
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NextPage(sheetName: sheets[index], sheetsService: sheetsService),
+              ),
+            );
           },
           child: Container(
             padding: EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: Colors.blueAccent,
+              color: colors[index%5],
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Center(
@@ -44,4 +47,3 @@ class SheetsGridView extends StatelessWidget {
     );
   }
 }
-

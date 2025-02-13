@@ -15,9 +15,7 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-
-  
-    String? selectedHostel;
+  String? selectedHostel;
   List<String> hostels = [];
 
   @override
