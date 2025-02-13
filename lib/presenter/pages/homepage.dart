@@ -5,10 +5,9 @@ import 'package:tu_electricity_app/presenter/components/decimal_textformfield.da
 import 'package:tu_electricity_app/presenter/components/hostel_dropdown.dart';
 
 class Homepage extends StatefulWidget {
-  final SheetsService? sheetsService; 
+  final SheetsService? sheetsService;
 
   const Homepage({super.key, required this.sheetsService});
-
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -17,11 +16,12 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   String? selectedHostel;
   List<String> hostels = [];
+  String? electricityConsumption;
 
   @override
   void initState() {
     super.initState();
-    fetchHostels(); 
+    fetchHostels();
   }
 
   Future<void> fetchHostels() async {
@@ -63,6 +63,7 @@ class _HomepageState extends State<Homepage> {
                 labelText: 'Enter electricity consumption (in kW)',
                 onChanged: (text) {
                   // print('Text changed: $text');
+                  electricityConsumption = text;
                 },
               ),
               const SizedBox(height: 20),
@@ -74,13 +75,12 @@ class _HomepageState extends State<Homepage> {
                   }
 
                   final accessToken = await TokenFunctions.getToken();
-                  String range = "Sheet1!A1";
-                  List<List<dynamic>> values = [
-                    ["Yash Agarwal", "Developer", "yash@example.com"], 
-                  ];
 
                   try {
-                    await widget.sheetsService!.appendData(range, values);
+                    await widget.sheetsService!.addOrUpdateEntry(
+                      selectedHostel!,
+                      electricityConsumption!,
+                    );
                     print("User data added successfully!");
                   } catch (e) {
                     print("Error appending data: $e");

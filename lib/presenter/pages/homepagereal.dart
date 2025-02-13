@@ -3,11 +3,10 @@ import 'package:tu_electricity_app/external/sheet_services.dart';
 import 'package:tu_electricity_app/presenter/components/gridview.dart';
 
 
-
 class HomePageMain extends StatefulWidget {
   final SheetsService? sheetsService;
 
-  HomePageMain({super.key, required this.sheetsService});
+  const HomePageMain({super.key, required this.sheetsService});
 
   @override
   State<HomePageMain> createState() => _HomePageMainState();
@@ -49,7 +48,7 @@ class NextPage extends StatelessWidget {
   final String sheetName;
   final SheetsService? sheetsService;
 
-  NextPage({required this.sheetName, required this.sheetsService});
+  const NextPage({super.key, required this.sheetName, required this.sheetsService});
 
   @override
   Widget build(BuildContext context) {
