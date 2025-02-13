@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:googleapis/sheets/v4.dart';
 import 'dart:math';
@@ -10,21 +12,6 @@ class SheetsService {
   final SheetsApi? sheetsApi;
 
   SheetsService(this.sheetsApi);
-
-  /// Append Data to Sheet
-  Future<void> appendData(String range, List<List<dynamic>> values) async {
-    final ValueRange request = ValueRange.fromJson({
-      "values": values,
-    });
-
-    await sheetsApi!.spreadsheets.values.append(
-      request,
-      dataSpreadsheetId,
-      range,
-      valueInputOption: "RAW",
-    );
-    print("Data successfully added!");
-  }
 
   /// Check if User is Authorized
   Future<bool> isAuthorizedUser(String email) async {
@@ -47,14 +34,14 @@ class SheetsService {
     return null;
   }
 
-  Future<List<dynamic>?> fetchFirstRow() async {
+  Future<List<dynamic>?> fetchFirstRow(String sheetId) async {
     try {
       final response = await sheetsApi!.spreadsheets.values.get(
         dataSpreadsheetId,
-        'Sheet1!E1:1',
+        '$sheetId!1:1',
       );
 
-      return response.values?.first;
+      return response.values?.first.sublist(4);
     } catch (e) {
       debugPrint("Error fetching first row: $e");
       return null;
@@ -67,23 +54,6 @@ class SheetsService {
     return response.values ?? [];
   }
 
-  /// Update a single cell
-  Future<void> updateCell(String cell, dynamic value) async {
-    final ValueRange request = ValueRange.fromJson({
-      "values": [
-        [value]
-      ],
-    });
-
-    await sheetsApi!.spreadsheets.values.update(
-      request,
-      dataSpreadsheetId,
-      cell,
-      valueInputOption: "RAW",
-    );
-    print("Cell updated successfully!");
-  }
-
   Future<List<String>> getAllSheets() async {
     final response = await sheetsApi!.spreadsheets.get(dataSpreadsheetId);
 
@@ -93,11 +63,11 @@ class SheetsService {
     return [];
   }
 
-  Future<List<List<dynamic>>?> fetchSheetData(String spreadsheetId) async {
+  Future<List<List<dynamic>>?> fetchSheetData(String spreadsheetId, String sheetId) async {
     try {
       final response = await sheetsApi!.spreadsheets.values.get(
         spreadsheetId,
-        'Sheet1!A:Z', // Fetching all columns dynamically
+        '$sheetId!A:Z', // Fetching all columns dynamically
       );
 
       return response.values ?? [];
@@ -107,11 +77,11 @@ class SheetsService {
     }
   }
 
-  Future<int> getNextSno(String spreadsheetId) async {
+  Future<int> getNextSno(String spreadsheetId, String sheetId) async {
     try {
       final response = await sheetsApi!.spreadsheets.values.get(
         spreadsheetId,
-        'Sheet1!A:A',
+        '$sheetId!A:A',
       );
 
       return (response.values?.length ?? 1);
@@ -121,9 +91,10 @@ class SheetsService {
     }
   }
 
-  Future<void> addOrUpdateEntry(String fieldName, dynamic dataValue) async {
+  Future<void> addOrUpdateEntry(String fieldName, dynamic dataValue, String sheetId) async {
     try {
-      final data = await fetchSheetData(dataSpreadsheetId);
+      dataValue = double.parse(dataValue);
+      final data = await fetchSheetData(dataSpreadsheetId, sheetId);
       if (data == null || data.isEmpty) return;
 
       // Extract headers dynamically
@@ -170,12 +141,12 @@ class SheetsService {
         await sheetsApi!.spreadsheets.values.update(
           request,
           dataSpreadsheetId,
-          'Sheet1!A$existingRowIndex:Z$existingRowIndex',
-          valueInputOption: 'RAW',
+          '$sheetId!A$existingRowIndex:Z$existingRowIndex',
+          valueInputOption: 'USER_ENTERED',
         );
       } else {
         // Add new row
-        int sno = await getNextSno(dataSpreadsheetId);
+        int sno = await getNextSno(dataSpreadsheetId, sheetId);
 
         List<dynamic> newRow = List.filled(headers.length, '');
         newRow[0] = sno;
@@ -191,8 +162,8 @@ class SheetsService {
         await sheetsApi!.spreadsheets.values.append(
           request,
           dataSpreadsheetId,
-          'Sheet1',
-          valueInputOption: 'RAW',
+          sheetId,
+          valueInputOption: 'USER_ENTERED',
         );
       }
 
