@@ -1,49 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tu_electricity_app/external/sheet_services.dart';
+import 'package:tu_electricity_app/presenter/components/gridview.dart';
 
-class SheetsGridView extends StatelessWidget {
-  final List<String> sheets;
-  final SheetsService? sheetsService;
-
-  const SheetsGridView({super.key, required this.sheets, required this.sheetsService});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 8.0,
-        mainAxisSpacing: 8.0,
-      ),
-      itemCount: sheets.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => NextPage(sheetName: sheets[index], sheetsService: sheetsService),
-              ),
-            );
-          },
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.blueAccent,
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Center(
-              child: Text(
-                sheets[index],
-                style: TextStyle(color: Colors.white, fontSize: 16.0),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
 
 class HomePageMain extends StatefulWidget {
   final SheetsService? sheetsService;
@@ -76,9 +34,12 @@ class _HomePageMainState extends State<HomePageMain> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Sheets")),
-      body: sheets.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : SheetsGridView(sheets: sheets, sheetsService: widget.sheetsService),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: sheets.isEmpty
+            ? Center(child: CircularProgressIndicator())
+            : SheetsGridView(sheets: sheets, sheetsService: widget.sheetsService),
+      ),
     );
   }
 }
