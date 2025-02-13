@@ -18,6 +18,7 @@ class _HomepageState extends State<Homepage> {
   List<String> hostels = [];
   String? electricityConsumption;
   bool _isLoading = true;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -48,6 +49,37 @@ class _HomepageState extends State<Homepage> {
     } finally {
       setState(() {
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> handleSubmit() async {
+    if (widget.sheetsService == null) {
+      print("SheetsService is not initialized!");
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await widget.sheetsService!.addOrUpdateEntry(
+        selectedHostel!,
+        electricityConsumption!,
+        widget.sheetId,
+      );
+      print("User data added successfully!");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Data submitted successfully!'),
+        ),
+      );
+    } catch (e) {
+      print("Error appending data: $e");
+    } finally {
+      setState(() {
+        _isSubmitting = false;
       });
     }
   }
@@ -88,30 +120,29 @@ class _HomepageState extends State<Homepage> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (widget.sheetsService == null) {
-                        print("SheetsService is not initialized!");
-                        return;
-                      }
-                      try {
-                        await widget.sheetsService!.addOrUpdateEntry(
-                          selectedHostel!,
-                          electricityConsumption!,
-                          widget.sheetId,
-                        );
-                        print("User data added successfully!");
-                      } catch (e) {
-                        print("Error appending data: $e");
-                      }
-                    },
-                    child: const Text('Submit'),
+                  SizedBox(
+                    width: 200.0,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await handleSubmit();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.deepPurple,
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+                        textStyle: const TextStyle(fontSize: 16.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
+                      ),
+                      child: const Text('Submit'),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          if (_isLoading)
+          if (_isLoading || _isSubmitting)
             Container(
               color: Colors.black.withOpacity(0.5),
               child: Center(
