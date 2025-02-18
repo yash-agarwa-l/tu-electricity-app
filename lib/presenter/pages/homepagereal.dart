@@ -43,20 +43,3 @@ class _HomePageMainState extends State<HomePageMain> {
     );
   }
 }
-
-class NextPage extends StatelessWidget {
-  final String sheetName;
-  final SheetsService? sheetsService;
-
-  const NextPage({super.key, required this.sheetName, required this.sheetsService});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(sheetName)),
-      body: Center(
-        child: Text("You selected $sheetName"),
-      ),
-    );
-  }
-}

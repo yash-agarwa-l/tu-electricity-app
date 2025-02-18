@@ -14,11 +14,11 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  String? selectedHostel;
   List<String> hostels = [];
-  String? electricityConsumption;
+  Map<String, String> hostelData = {};
   bool _isLoading = true;
   bool _isSubmitting = false;
+  String? selectedHostel;
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
-  Future<void> handleSubmit() async {
+  Future<void> handleSubmit(String hostel, String consumption) async {
     if (widget.sheetsService == null) {
       print("SheetsService is not initialized!");
       return;
@@ -65,16 +65,11 @@ class _HomepageState extends State<Homepage> {
 
     try {
       await widget.sheetsService!.addOrUpdateEntry(
-        selectedHostel!,
-        electricityConsumption!,
+        hostel,
+        consumption,
         widget.sheetId,
       );
-      print("User data added successfully!");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Data submitted successfully!'),
-        ),
-      );
+      print("User data added successfully for $hostel!");
     } catch (e) {
       print("Error appending data: $e");
     } finally {
@@ -89,57 +84,68 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       body: Stack(
         children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Consumption Entry',
-                      style: TextStyle(fontSize: 32),
-                    ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Consumption Entry',
+                    style: TextStyle(fontSize: 32),
                   ),
-                  const SizedBox(height: 20),
-                  HostelDropdown(
-                    hostels: hostels,
-                    selectedHostel: selectedHostel,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedHostel = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  DecimalInputField(
-                    labelText: 'Enter electricity consumption (in kW)',
-                    onChanged: (text) {
-                      electricityConsumption = text;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: 200.0,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        await handleSubmit();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.deepPurple,
-                        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
-                        textStyle: const TextStyle(fontSize: 16.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: hostels.length,
+                    itemBuilder: (context, index) {
+                      String hostel = hostels[index];
+                      return Card(
+                        elevation: 4,
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                hostel,
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 10),
+                              DecimalInputField(
+                                labelText: 'Enter electricity consumption (in kW)',
+                                onChanged: (text) {
+                                  hostelData[hostel] = text;
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  if (hostelData[hostel] != null && hostelData[hostel]!.isNotEmpty) {
+                                    await handleSubmit(hostel, hostelData[hostel]!);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.deepPurple,
+                                  padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+                                  textStyle: const TextStyle(fontSize: 16.0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16.0),
+                                  ),
+                                ),
+                                child: const Text('Submit'),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      child: const Text('Submit'),
-                    ),
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           if (_isLoading || _isSubmitting)

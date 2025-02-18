@@ -13,20 +13,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
-  Future<void> handleLogin(BuildContext context) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await loginFunction(context);
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
                     width: 200.0,
                     child: ElevatedButton(
                       onPressed: () async {
-                        await handleLogin(context);
+                        await loginFunction(context);
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
