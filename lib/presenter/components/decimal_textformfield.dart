@@ -4,7 +4,8 @@ class DecimalInputField extends StatelessWidget {
   final String labelText;
   final ValueChanged<String> onChanged;
 
-  const DecimalInputField({super.key, 
+  const DecimalInputField({
+    super.key,
     required this.labelText,
     required this.onChanged,
   });
@@ -31,7 +32,7 @@ class DecimalInputField extends StatelessWidget {
         if (number != null && number <= 0) {
           return 'Value must be greater than zero';
         }
-        return null; 
+        return null;
       },
     );
   }

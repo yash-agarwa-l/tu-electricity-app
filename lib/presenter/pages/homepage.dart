@@ -15,6 +15,7 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  final _formKey = GlobalKey<FormState>();
   String? selectedHostel;
   List<String> hostels = [];
   String? electricityConsumption;
@@ -28,12 +29,20 @@ class _HomepageState extends State<Homepage> {
     fetchHostels();
   }
 
+  @override
+  void dispose() {
+    _submissionTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> fetchHostels() async {
     if (widget.sheetsService == null) {
       debugPrint("SheetsService is not initialized!");
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       return;
     }
 
@@ -42,31 +51,42 @@ class _HomepageState extends State<Homepage> {
         widget.sheetId,
       );
       if (firstRow != null && firstRow.isNotEmpty) {
-        setState(() {
-          hostels = firstRow.map((e) => e.toString()).toList();
-        });
+        if (mounted) {
+          setState(() {
+            hostels = firstRow.map((e) => e.toString()).toList();
+            selectedHostel = hostels.first;
+          });
+        }
       }
     } catch (e) {
       debugPrint("Error fetching hostels: $e");
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> handleSubmit() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     if (widget.sheetsService == null) {
       print("SheetsService is not initialized!");
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isSubmitting = true;
+      });
+    }
 
     _submissionTimer = Timer(Duration(seconds: 60), () {
-      if (_isSubmitting) {
+      if (_isSubmitting && mounted) {
         setState(() {
           _isSubmitting = false;
         });
@@ -85,101 +105,117 @@ class _HomepageState extends State<Homepage> {
         widget.sheetId,
       );
       print("User data added successfully!");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Data submitted successfully!'),
-        ),
-      );
-      setState(() {
-        int currentIndex = hostels.indexOf(selectedHostel!);
-        selectedHostel = hostels[(currentIndex + 1) % hostels.length];
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Data submitted successfully!'),
+          ),
+        );
+        setState(() {
+          int currentIndex = hostels.indexOf(selectedHostel!);
+          selectedHostel = hostels[(currentIndex + 1) % hostels.length];
+        });
+      }
     } catch (e) {
       print("Error appending data: $e");
     } finally {
       _submissionTimer?.cancel();
-      setState(() {
-        _isSubmitting = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
   void selectPreviousHostel() {
-    setState(() {
-      int currentIndex = hostels.indexOf(selectedHostel!);
-      selectedHostel = hostels[(currentIndex - 1 + hostels.length) % hostels.length];
-    });
+    if (mounted) {
+      setState(() {
+        int currentIndex = hostels.indexOf(selectedHostel!);
+        selectedHostel = hostels[(currentIndex - 1 + hostels.length) % hostels.length];
+      });
+    }
   }
 
   void selectNextHostel() {
-    setState(() {
-      int currentIndex = hostels.indexOf(selectedHostel!);
-      selectedHostel = hostels[(currentIndex + 1) % hostels.length];
-    });
+    if (mounted) {
+      setState(() {
+        int currentIndex = hostels.indexOf(selectedHostel!);
+        selectedHostel = hostels[(currentIndex + 1) % hostels.length];
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.sheetId),
+      ),
       body: Stack(
         children: [
           Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Consumption Entry',
-                      style: TextStyle(fontSize: 32),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  HostelDropdown(
-                    hostels: hostels,
-                    selectedHostel: selectedHostel,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedHostel = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  DecimalInputField(
-                    labelText: 'Enter electricity consumption (in kW)',
-                    onChanged: (text) {
-                      electricityConsumption = text;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton.filled(onPressed: selectPreviousHostel, icon: Icon(Icons.arrow_back)),
-                      SizedBox(
-                        width: 200.0,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            await handleSubmit();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.deepPurple,
-                            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
-                            textStyle: const TextStyle(fontSize: 16.0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.0),
-                            ),
-                          ),
-                          child: const Text('Submit'),
-                        ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Consumption Entry',
+                        style: TextStyle(fontSize: 32),
                       ),
-                      IconButton.filled(onPressed: selectNextHostel, icon: Icon(Icons.arrow_forward)),
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(height: 20),
+                    HostelDropdown(
+                      hostels: hostels,
+                      selectedHostel: selectedHostel,
+                      onChanged: (value) {
+                        if (mounted) {
+                          setState(() {
+                            selectedHostel = value;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    DecimalInputField(
+                      labelText: 'Enter electricity consumption',
+                      onChanged: (text) {
+                        electricityConsumption = text;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton.filled(onPressed: selectPreviousHostel, icon: Icon(Icons.arrow_back)),
+                        SizedBox(
+                          width: 200.0,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await handleSubmit();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                              backgroundColor: Theme.of(context).colorScheme.secondary,
+                              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+                              textStyle: const TextStyle(fontSize: 16.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                            ),
+                            child: const Text('Submit'),
+                          ),
+                        ),
+                        IconButton.filled(onPressed: selectNextHostel, icon: Icon(Icons.arrow_forward)),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

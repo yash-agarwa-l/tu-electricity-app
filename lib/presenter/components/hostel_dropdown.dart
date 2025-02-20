@@ -5,7 +5,8 @@ class HostelDropdown extends StatelessWidget {
   final String? selectedHostel;
   final ValueChanged<String?> onChanged;
 
-  const HostelDropdown({super.key, 
+  const HostelDropdown({
+    super.key,
     required this.hostels,
     required this.selectedHostel,
     required this.onChanged,
@@ -16,7 +17,7 @@ class HostelDropdown extends StatelessWidget {
     return DropdownButtonFormField<String>(
       value: selectedHostel,
       decoration: InputDecoration(
-        labelText: 'Select a Hostel',
+        labelText: 'Select an Entry',
         border: OutlineInputBorder(),
       ),
       onChanged: onChanged,
@@ -28,9 +29,9 @@ class HostelDropdown extends StatelessWidget {
       }).toList(),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please select a hostel';
+          return 'Please select an Entry';
         }
-        return null; 
+        return null;
       },
     );
   }

@@ -37,8 +37,11 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.all(76.0),
             child: Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  ColorFiltered(
+                      colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.error, BlendMode.srcATop),
+                      child: Image.asset('assets/images/ti_logo.png', height: 300, width: 300)),
                   Text(
                     'Login to TU Electricity App',
                     textAlign: TextAlign.center,
@@ -52,8 +55,8 @@ class _LoginPageState extends State<LoginPage> {
                         await handleLogin(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                        backgroundColor: Theme.of(context).colorScheme.secondary,
                         padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
                         textStyle: const TextStyle(fontSize: 16.0),
                         shape: RoundedRectangleBorder(

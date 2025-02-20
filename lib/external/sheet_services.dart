@@ -18,7 +18,6 @@ class SheetsService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      print(data);
       return data['current_weather']['temperature'].toDouble();
     } else {
       throw Exception('Failed to fetch weather data');

@@ -6,7 +6,16 @@ import 'package:tu_electricity_app/presenter/utils/colors.dart';
 class SheetsGridView extends StatelessWidget {
   final List<String> sheets;
   final SheetsService? sheetsService;
-  final List<Color> colors = [AppColors.color1, AppColors.color2, AppColors.color3, AppColors.color4, AppColors.color5];
+  final List<Color> colors = [
+    AppColors.color1,
+    AppColors.color2,
+    AppColors.color3,
+    AppColors.color4,
+    AppColors.color5,
+    AppColors.color6,
+    AppColors.color7,
+    AppColors.color8
+  ];
 
   SheetsGridView({super.key, required this.sheets, required this.sheetsService});
 
@@ -38,7 +47,7 @@ class SheetsGridView extends StatelessWidget {
             child: Center(
               child: Text(
                 sheets[index],
-                style: TextStyle(color: Colors.white, fontSize: 16.0),
+                style: TextStyle(color: Colors.white, fontSize: 20.0),
               ),
             ),
           ),
