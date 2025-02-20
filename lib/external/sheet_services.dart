@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:googleapis/sheets/v4.dart';
-import 'package:http/http.dart' as http;
+import 'dart:math';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class SheetsService {
   final String authSpreadsheetId =
@@ -18,6 +19,7 @@ class SheetsService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print(data);
       return data['current_weather']['temperature'].toDouble();
     } else {
       throw Exception('Failed to fetch weather data');
@@ -78,7 +80,7 @@ class SheetsService {
     try {
       final response = await sheetsApi!.spreadsheets.values.get(
         spreadsheetId,
-        '$sheetId!A:Z', // Fetching all columns dynamically
+        sheetId, // Fetching all columns dynamically
       );
 
       return response.values ?? [];
@@ -119,21 +121,6 @@ class SheetsService {
 
       String date = DateTime.now().toIso8601String().split('T').first;
       String hour = DateTime.now().hour.toString();
-      double temperature = 0;
-
-      // Check if temperature for the day is already fetched
-      for (int i = 1; i < data.length; i++) {
-        List<dynamic> row = data[i];
-        if (row.length > 2 && row[1] == date) {
-          temperature = row[3];
-          break;
-        }
-      }
-
-      // Fetch temperature if not already fetched for the day
-      if (temperature == 0) {
-        temperature = await fetchWeather();
-      }
 
       List<dynamic>? existingRow;
       int existingRowIndex = -1;
@@ -166,12 +153,13 @@ class SheetsService {
         await sheetsApi!.spreadsheets.values.update(
           request,
           dataSpreadsheetId,
-          '$sheetId!A$existingRowIndex:Z$existingRowIndex',
+          '$sheetId!$existingRowIndex:$existingRowIndex',
           valueInputOption: 'USER_ENTERED',
         );
       } else {
         // Add new row
         int sno = await getNextSno(dataSpreadsheetId, sheetId);
+        double temperature = await fetchWeather();
 
         List<dynamic> newRow = List.filled(headers.length, '');
         newRow[0] = sno;
