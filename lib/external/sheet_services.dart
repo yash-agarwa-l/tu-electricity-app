@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:googleapis/sheets/v4.dart';
-import 'dart:math';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -120,7 +119,7 @@ class SheetsService {
       }
 
       String date = DateTime.now().toIso8601String().split('T').first;
-      String hour = DateTime.now().hour.toString();
+      String time = DateTime.now().toIso8601String().split('T').last.split('.')[0].substring(0, 5);
 
       List<dynamic>? existingRow;
       int existingRowIndex = -1;
@@ -164,7 +163,7 @@ class SheetsService {
         List<dynamic> newRow = List.filled(headers.length, '');
         newRow[0] = sno;
         newRow[1] = date;
-        newRow[2] = hour;
+        newRow[2] = time;
         newRow[3] = temperature;
         newRow[fieldIndex] = dataValue;
 
