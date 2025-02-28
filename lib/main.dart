@@ -9,13 +9,13 @@ import 'package:tu_electricity_app/presenter/pages/loginpage.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final bool isLoggedIn = await _checkLoginStatus();
-  final String? email = await _getStoredEmail();
+  // final String? email = await _getStoredEmail();
 
   SheetsService? sheetsService;
-  if (isLoggedIn && email != null) {
+  // if (isLoggedIn && email != null) {
     // final authService = GoogleAuthService();
     sheetsService = SheetsService();
-  }
+  // }
 
   runApp(MyApp(isLoggedIn: isLoggedIn, sheetsService: sheetsService));
 }
@@ -25,10 +25,10 @@ Future<bool> _checkLoginStatus() async {
   return prefs.getBool('isLoggedIn') ?? false;
 }
 
-Future<String?> _getStoredEmail() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('email');
-}
+// Future<String?> _getStoredEmail() async {
+//   final prefs = await SharedPreferences.getInstance();
+//   return prefs.getString('email');
+// }
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;

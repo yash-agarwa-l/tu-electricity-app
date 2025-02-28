@@ -7,7 +7,7 @@ import 'package:tu_electricity_app/external/sheetauth.dart';
 
 Future<void> loginFunction(BuildContext context) async {
   try {
-    final authService = GoogleAuthService();
+    // final authService = GoogleAuthService();
     // final authClient = await authService.getAuthenticatedClient();
     
     // if (authClient == null) {
