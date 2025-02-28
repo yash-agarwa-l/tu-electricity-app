@@ -13,11 +13,8 @@ void main() async {
 
   SheetsService? sheetsService;
   if (isLoggedIn && email != null) {
-    final authService = GoogleAuthService();
-    final authClient = await authService.getAuthenticatedClient();
-    if (authClient != null) {
-      sheetsService = SheetsService(SheetsApi(authClient));
-    }
+    // final authService = GoogleAuthService();
+    sheetsService = SheetsService();
   }
 
   runApp(MyApp(isLoggedIn: isLoggedIn, sheetsService: sheetsService));

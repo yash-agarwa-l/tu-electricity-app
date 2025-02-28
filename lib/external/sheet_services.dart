@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:googleapis/sheets/v4.dart';
+import 'package:tu_electricity_app/external/authfunctions.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:tu_electricity_app/external/sheetauth.dart';
 
 class SheetsService {
   final String authSpreadsheetId =
       "1fI1vhR1UD7Y1XQxqvIPYCjUcZwn2av66i6ai0cH84EE"; // Replace with your auth spreadsheet ID
   final String dataSpreadsheetId =
       "1NgqMRLMDj7ubEku9L9pqt1_tphnm0gAS24yxlhm4bMI"; // Replace with your data spreadsheet ID
-  final SheetsApi? sheetsApi;
+  SheetsApi? _sheetsApi;
 
-  SheetsService(this.sheetsApi);
+  SheetsService() {
+    _initializeSheetsApi();
+  }
 
+  /// Ensures Sheets API is initialized
+  Future<void> _initializeSheetsApi() async {
+    await AuthFunctions().initializeSheetsApi();
+    _sheetsApi = AuthFunctions().sheetsApi;
+  }
+
+  /// Fetch weather data
   Future<double> fetchWeather() async {
-    final response = await http.get(
-        Uri.parse('https://api.open-meteo.com/v1/forecast?latitude=30.3564&longitude=76.3646&current_weather=true'));
+    final response = await http.get(Uri.parse(
+        'https://api.open-meteo.com/v1/forecast?latitude=30.3564&longitude=76.3646&current_weather=true'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -24,30 +35,9 @@ class SheetsService {
     }
   }
 
-  /// Check if User is Authorized
-  Future<bool> isAuthorizedUser(String email) async {
-    final response = await sheetsApi!.spreadsheets.values.get(dataSpreadsheetId, "Users!A:A");
-
-    if (response.values != null) {
-      List<String> emails = response.values!.map((row) => row[0].toString()).toList();
-      return emails.contains(email);
-    }
-    return false;
-  }
-
-  /// Get a specific cell value
-  Future<String?> getCellValue(String cell) async {
-    final response = await sheetsApi!.spreadsheets.values.get(dataSpreadsheetId, cell);
-
-    if (response.values != null && response.values!.isNotEmpty) {
-      return response.values![0][0].toString();
-    }
-    return null;
-  }
-
   Future<List<dynamic>?> fetchFirstRow(String sheetId) async {
     try {
-      final response = await sheetsApi!.spreadsheets.values.get(
+      final response = await _sheetsApi!.spreadsheets.values.get(
         dataSpreadsheetId,
         '$sheetId!1:1',
       );
@@ -59,14 +49,33 @@ class SheetsService {
     }
   }
 
-  /// Get multiple values from a range
-  Future<List<List<dynamic>>> getRangeValues(String range) async {
-    final response = await sheetsApi!.spreadsheets.values.get(dataSpreadsheetId, range);
-    return response.values ?? [];
+  /// Check if a user is authorized
+  Future<bool> isAuthorizedUser(String email) async {
+    await _initializeSheetsApi(); // Ensure API is ready
+    final response = await _sheetsApi!.spreadsheets.values.get(dataSpreadsheetId, "Users!A:A");
+
+    if (response.values != null) {
+      List<String> emails = response.values!.map((row) => row[0].toString()).toList();
+      return emails.contains(email);
+    }
+    return false;
   }
 
+  /// Fetch a specific cell value
+  Future<String?> getCellValue(String cell) async {
+    await _initializeSheetsApi();
+    final response = await _sheetsApi!.spreadsheets.values.get(dataSpreadsheetId, cell);
+
+    if (response.values != null && response.values!.isNotEmpty) {
+      return response.values![0][0].toString();
+    }
+    return null;
+  }
+
+  /// Fetch all sheet names
   Future<List<String>> getAllSheets() async {
-    final response = await sheetsApi!.spreadsheets.get(dataSpreadsheetId);
+    await _initializeSheetsApi();
+    final response = await _sheetsApi!.spreadsheets.get(dataSpreadsheetId);
 
     if (response.sheets != null && response.sheets!.isNotEmpty) {
       return response.sheets!.map((sheet) => sheet.properties!.title!).toList();
@@ -74,41 +83,29 @@ class SheetsService {
     return [];
   }
 
-  Future<List<List<dynamic>>?> fetchSheetData(String spreadsheetId, String sheetId) async {
-    try {
-      final response = await sheetsApi!.spreadsheets.values.get(
-        spreadsheetId,
-        sheetId, // Fetching all columns dynamically
-      );
-
-      return response.values ?? [];
-    } catch (e) {
-      debugPrint("Error fetching data from Google Sheets: $e");
-      return null;
-    }
+  /// Fetch full sheet data
+  Future<List<List<dynamic>>?> fetchSheetData(String sheetId) async {
+    await _initializeSheetsApi();
+    final response = await _sheetsApi!.spreadsheets.values.get(dataSpreadsheetId, sheetId);
+    return response.values ?? [];
   }
 
-  Future<int> getNextSno(String spreadsheetId, String sheetId) async {
-    try {
-      final response = await sheetsApi!.spreadsheets.values.get(
-        spreadsheetId,
-        '$sheetId!A:A',
-      );
-
-      return (response.values?.length ?? 1);
-    } catch (e) {
-      debugPrint("Error fetching serial number: $e");
-      return 1;
-    }
+  /// Get the next serial number in a sheet
+  Future<int> getNextSno(String sheetId) async {
+    await _initializeSheetsApi();
+    final response = await _sheetsApi!.spreadsheets.values.get(dataSpreadsheetId, '$sheetId!A:A');
+    return (response.values?.length ?? 1);
   }
 
+  /// Add or update an entry in the sheet
   Future<void> addOrUpdateEntry(String fieldName, dynamic dataValue, String sheetId) async {
+    await _initializeSheetsApi();
+    
     try {
       dataValue = double.parse(dataValue);
-      final data = await fetchSheetData(dataSpreadsheetId, sheetId);
+      final data = await fetchSheetData(sheetId);
       if (data == null || data.isEmpty) return;
 
-      // Extract headers dynamically
       List<dynamic> headers = data.first;
       int fieldIndex = headers.indexOf(fieldName);
 
@@ -123,18 +120,16 @@ class SheetsService {
       List<dynamic>? existingRow;
       int existingRowIndex = -1;
 
-      // Find existing row for current date & hour
       for (int i = 1; i < data.length; i++) {
         List<dynamic> row = data[i];
         if (row.length > 2 && row[1] == date) {
           existingRow = row;
-          existingRowIndex = i + 1; // Sheets is 1-based index
+          existingRowIndex = i + 1;
           break;
         }
       }
 
       if (existingRow != null) {
-        // Update only the required column
         if (fieldIndex < existingRow.length) {
           existingRow[fieldIndex] = dataValue;
         } else {
@@ -144,19 +139,15 @@ class SheetsService {
           existingRow[fieldIndex] = dataValue;
         }
 
-        final request = ValueRange.fromJson({
-          'values': [existingRow]
-        });
-
-        await sheetsApi!.spreadsheets.values.update(
+        final request = ValueRange.fromJson({'values': [existingRow]});
+        await _sheetsApi!.spreadsheets.values.update(
           request,
           dataSpreadsheetId,
           '$sheetId!$existingRowIndex:$existingRowIndex',
           valueInputOption: 'USER_ENTERED',
         );
       } else {
-        // Add new row
-        int sno = await getNextSno(dataSpreadsheetId, sheetId);
+        int sno = await getNextSno(sheetId);
         double temperature = await fetchWeather();
 
         List<dynamic> newRow = List.filled(headers.length, '');
@@ -166,11 +157,8 @@ class SheetsService {
         newRow[3] = temperature;
         newRow[fieldIndex] = dataValue;
 
-        final request = ValueRange.fromJson({
-          'values': [newRow]
-        });
-
-        await sheetsApi!.spreadsheets.values.append(
+        final request = ValueRange.fromJson({'values': [newRow]});
+        await _sheetsApi!.spreadsheets.values.append(
           request,
           dataSpreadsheetId,
           sheetId,
