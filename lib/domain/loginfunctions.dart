@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:googleapis/sheets/v4.dart';
 import 'package:tu_electricity_app/external/authfunctions.dart';
 import 'package:tu_electricity_app/external/sheet_services.dart';
@@ -22,6 +23,10 @@ Future<void> loginFunction(BuildContext context) async {
 
     final isAuthorized = await sheetsService.isAuthorizedUser(email);
     if (isAuthorized) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('email', email);
+
       Navigator.pushReplacementNamed(
         context,
         '/home',
@@ -40,3 +45,4 @@ void _showMessage(BuildContext context, String message) {
     SnackBar(content: Text(message)),
   );
 }
+

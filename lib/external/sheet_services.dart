@@ -7,7 +7,7 @@ class SheetsService {
   final String authSpreadsheetId =
       "1fI1vhR1UD7Y1XQxqvIPYCjUcZwn2av66i6ai0cH84EE"; // Replace with your auth spreadsheet ID
   final String dataSpreadsheetId =
-      "1voQfJGsMjwGU44w6xTA96VMgc-8SkIt3cKsYq9oGOOo"; // Replace with your data spreadsheet ID
+      "1NgqMRLMDj7ubEku9L9pqt1_tphnm0gAS24yxlhm4bMI"; // Replace with your data spreadsheet ID
   final SheetsApi? sheetsApi;
 
   SheetsService(this.sheetsApi);
@@ -26,7 +26,7 @@ class SheetsService {
 
   /// Check if User is Authorized
   Future<bool> isAuthorizedUser(String email) async {
-    final response = await sheetsApi!.spreadsheets.values.get(authSpreadsheetId, "Users!A:A");
+    final response = await sheetsApi!.spreadsheets.values.get(dataSpreadsheetId, "Users!A:A");
 
     if (response.values != null) {
       List<String> emails = response.values!.map((row) => row[0].toString()).toList();

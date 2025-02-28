@@ -27,7 +27,7 @@ class SheetsGridView extends StatelessWidget {
         crossAxisSpacing: 25.0,
         mainAxisSpacing: 25.0,
       ),
-      itemCount: sheets.length,
+      itemCount: sheets.length-1,
       itemBuilder: (context, index) {
         return GestureDetector(
           onTap: () {
