@@ -15,31 +15,31 @@ Future<void> loginFunction(BuildContext context) async {
     //   return;
     // }
 
-    String? email = await authService.getGoogleEmail();
-    if (email == null) {
-      _showMessage(context, "Failed to retrieve email");
-      return;
-    }
+    // String? email = await authService.getGoogleEmail();
+    // if (email == null) {
+    //   _showMessage(context, "Failed to retrieve email");
+    //   return;
+    // }
 
     // Ensure Sheets API is initialized
     await AuthFunctions().initializeSheetsApi();
 
     final sheetsService = SheetsService();
 
-    final isAuthorized = await sheetsService.isAuthorizedUser(email);
-    if (isAuthorized) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('email', email);
+    // // final isAuthorized = await sheetsService.isAuthorizedUser(email);
+    // // if (isAuthorized) {
+    //   final prefs = await SharedPreferences.getInstance();
+    //   await prefs.setBool('isLoggedIn', true);
+    //   // await prefs.setString('email', email);
 
       Navigator.pushReplacementNamed(
         context,
         '/home',
         arguments: sheetsService,
       );
-    } else {
-      _showMessage(context, "Unauthorized User");
-    }
+    // } else {
+    //   _showMessage(context, "Unauthorized User");
+    // }
   } catch (e) {
     _showMessage(context, "Login Error: $e");
   }
