@@ -36,38 +36,62 @@ class _HomepageState extends State<Homepage> {
   }
 
   Future<void> fetchHostels() async {
-    if (widget.sheetsService == null) {
-      debugPrint("SheetsService is not initialized!");
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-      return;
+  if (widget.sheetsService == null) {
+    debugPrint("SheetsService is not initialized!");
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
+    return;
+  }
 
-    try {
-      final List<dynamic>? firstRow = await widget.sheetsService!.fetchFirstRow(
-        widget.sheetId,
-      );
-      if (firstRow != null && firstRow.isNotEmpty) {
-        if (mounted) {
-          setState(() {
-            hostels = firstRow.map((e) => e.toString()).toList();
-            selectedHostel = hostels.first;
-          });
+  try {
+    final List<dynamic>? headers = await widget.sheetsService!.fetchFirstRow(widget.sheetId);
+    final List<List<dynamic>>? fullData = await widget.sheetsService!.fetchSheetData(widget.sheetId);
+    String today = DateTime.now().toIso8601String().split('T').first;
+
+    if (headers != null && headers.isNotEmpty) {
+      List<dynamic>? todayRow;
+
+      for (int i = 1; i < fullData!.length; i++) {
+        final row = fullData[i];
+        if (row.length > 1 && row[1] == today) {
+          todayRow = row;
+          break;
         }
       }
-    } catch (e) {
-      debugPrint("Error fetching hostels: $e");
-    } finally {
+
+      List<String> availableHostels = [];
+
+      for (int i = 0; i < headers.length; i++) {
+        // Exclude first 4 fields like Sno, Date, Time, Temperature
+        if (i < 4) continue;
+
+        final columnValue = (todayRow != null && i < todayRow.length) ? todayRow[i] : "";
+        if (columnValue == null || columnValue.toString().trim().isEmpty) {
+          availableHostels.add(headers[i].toString());
+        }
+      }
+
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          hostels = availableHostels;
+          selectedHostel = hostels.isNotEmpty ? hostels.first : null;
         });
       }
     }
+  } catch (e) {
+    debugPrint("Error fetching hostels: $e");
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
+}
+
 
   Future<void> handleSubmit() async {
     if (!_formKey.currentState!.validate()) {

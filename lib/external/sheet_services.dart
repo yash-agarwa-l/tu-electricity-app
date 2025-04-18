@@ -99,76 +99,79 @@ class SheetsService {
 
   /// Add or update an entry in the sheet
   Future<void> addOrUpdateEntry(String fieldName, dynamic dataValue, String sheetId) async {
-    await _initializeSheetsApi();
-    
-    try {
-      dataValue = double.parse(dataValue);
-      final data = await fetchSheetData(sheetId);
-      if (data == null || data.isEmpty) return;
+  await _initializeSheetsApi();
 
-      List<dynamic> headers = data.first;
-      int fieldIndex = headers.indexOf(fieldName);
+  try {
+    dataValue = double.parse(dataValue);
+    final data = await fetchSheetData(sheetId);
+    if (data == null || data.isEmpty) return;
 
-      if (fieldIndex == -1) {
-        debugPrint("Field '$fieldName' not found in the sheet.");
-        return;
-      }
+    List<dynamic> headers = data.first;
+    int fieldIndex = headers.indexOf(fieldName);
 
-      String date = DateTime.now().toIso8601String().split('T').first;
-      String time = DateTime.now().toIso8601String().split('T').last.split('.')[0].substring(0, 5);
-
-      List<dynamic>? existingRow;
-      int existingRowIndex = -1;
-
-      for (int i = 1; i < data.length; i++) {
-        List<dynamic> row = data[i];
-        if (row.length > 2 && row[1] == date) {
-          existingRow = row;
-          existingRowIndex = i + 1;
-          break;
-        }
-      }
-
-      if (existingRow != null) {
-        if (fieldIndex < existingRow.length) {
-          existingRow[fieldIndex] = dataValue;
-        } else {
-          while (existingRow.length <= fieldIndex) {
-            existingRow.add('');
-          }
-          existingRow[fieldIndex] = dataValue;
-        }
-
-        final request = ValueRange.fromJson({'values': [existingRow]});
-        await _sheetsApi!.spreadsheets.values.update(
-          request,
-          dataSpreadsheetId,
-          '$sheetId!$existingRowIndex:$existingRowIndex',
-          valueInputOption: 'USER_ENTERED',
-        );
-      } else {
-        int sno = await getNextSno(sheetId);
-        double temperature = await fetchWeather();
-
-        List<dynamic> newRow = List.filled(headers.length, '');
-        newRow[0] = sno;
-        newRow[1] = date;
-        newRow[2] = time;
-        newRow[3] = temperature;
-        newRow[fieldIndex] = dataValue;
-
-        final request = ValueRange.fromJson({'values': [newRow]});
-        await _sheetsApi!.spreadsheets.values.append(
-          request,
-          dataSpreadsheetId,
-          sheetId,
-          valueInputOption: 'USER_ENTERED',
-        );
-      }
-
-      debugPrint('Entry added or updated successfully.');
-    } catch (e) {
-      debugPrint("Error adding or updating entry: $e");
+    if (fieldIndex == -1) {
+      debugPrint("Field '$fieldName' not found in the sheet.");
+      return;
     }
+
+    String date = DateTime.now().toIso8601String().split('T').first;
+    String time = DateTime.now().toIso8601String().split('T').last.split('.')[0].substring(0, 5);
+
+    List<dynamic>? existingRow;
+    int existingRowIndex = -1;
+
+    for (int i = 1; i < data.length; i++) {
+      List<dynamic> row = data[i];
+      if (row.length > 1 && row[1] == date) {
+        existingRow = row;
+        existingRowIndex = i + 1;
+        break;
+      }
+    }
+
+    if (existingRow != null) {
+      // Already filled?
+      if (fieldIndex < existingRow.length && existingRow[fieldIndex].toString().trim().isNotEmpty) {
+        debugPrint("Field '$fieldName' already filled for today. Update not allowed.");
+        return; // Don't update if already filled
+      }
+
+      while (existingRow.length <= fieldIndex) {
+        existingRow.add('');
+      }
+      existingRow[fieldIndex] = dataValue;
+
+      final request = ValueRange.fromJson({'values': [existingRow]});
+      await _sheetsApi!.spreadsheets.values.update(
+        request,
+        dataSpreadsheetId,
+        '$sheetId!$existingRowIndex:$existingRowIndex',
+        valueInputOption: 'USER_ENTERED',
+      );
+    } else {
+      // Create new row
+      int sno = await getNextSno(sheetId);
+      double temperature = await fetchWeather();
+
+      List<dynamic> newRow = List.filled(headers.length, '');
+      newRow[0] = sno;
+      newRow[1] = date;
+      newRow[2] = time;
+      newRow[3] = temperature;
+      newRow[fieldIndex] = dataValue;
+
+      final request = ValueRange.fromJson({'values': [newRow]});
+      await _sheetsApi!.spreadsheets.values.append(
+        request,
+        dataSpreadsheetId,
+        sheetId,
+        valueInputOption: 'USER_ENTERED',
+      );
+    }
+
+    debugPrint('Entry added or updated successfully.');
+  } catch (e) {
+    debugPrint("Error adding or updating entry: $e");
   }
+}
 }
